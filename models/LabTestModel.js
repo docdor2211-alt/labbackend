@@ -69,15 +69,17 @@ const labTestSchema =
 
 
 
-      // CATEGORY
-      category: {
-
+      // CATEGORY (Supports both labCategory and category)
+      labCategory: {
         type:
           mongoose.Schema.Types.ObjectId,
-
         ref: "LabCategory",
+      },
 
-        required: true,
+      category: {
+        type:
+          mongoose.Schema.Types.ObjectId,
+        ref: "LabCategory",
       },
 
 
@@ -97,17 +99,8 @@ const labTestSchema =
 
       // IMAGE
       image: {
-
-        url: {
-          type: String,
-          default: "",
-        },
-
-        publicId: {
-          type: String,
-          default: "",
-        },
-
+        type: mongoose.Schema.Types.Mixed,
+        default: () => ({ url: "", publicId: "" }),
       },
 
 
