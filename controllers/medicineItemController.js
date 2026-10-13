@@ -523,65 +523,76 @@ const MedicineSubCategory = require("../models/medicineSubCategory.model");
 // CREATE MEDICINE
 // ==========================================
 exports.createMedicine = async (req, res) => {
-try {
+  try {
+    const {
+      medicineCategory,
+      medicineSubCategory,
+      subCategoryId,
+      name,
+      description,
+      price,
+      newPrice,
+      oldPrice,
+      mrp,
+      type,
+      delivery,
+      discount,
+      prescription,
+      image,
+      imageUrl,
+      quantity,
+      stock,
+    } = req.body;
 
+    const targetSub = medicineSubCategory || subCategoryId;
+    const displayName = (name || description || "").trim();
+    const sellingPrice = Number(newPrice ?? price ?? mrp ?? 0);
+    const regularPrice = Number(oldPrice ?? mrp ?? sellingPrice);
 
-const {
-  medicineCategory,
-  medicineSubCategory,
-  name,
-  description,
-  price
-} = req.body;
+    if (!targetSub || !displayName) {
+      return res.status(400).json({
+        success: false,
+        message: "medicineSubCategory and name/description are required",
+      });
+    }
 
-console.log("BODY =>", req.body);
+    let imgData = image || {};
+    if (typeof imgData === "string") {
+      imgData = { url: imgData, publicId: "" };
+    } else if (!imgData.url && imageUrl) {
+      imgData = { url: imageUrl, publicId: "" };
+    }
 
-if (
-  !medicineCategory ||
-  !medicineSubCategory ||
-  !name ||
-  !price
-) {
-  return res.status(400).json({
-    success: false,
-    message:
-      "medicineCategory, medicineSubCategory, name and price are required"
-  });
-}
+    const medicine = await MedicineItem.create({
+      medicineCategory: medicineCategory || null,
+      medicineSubCategory: targetSub,
+      subCategoryId: targetSub ? targetSub.toString() : "",
+      name: displayName,
+      description: description || displayName,
+      price: sellingPrice,
+      newPrice: sellingPrice,
+      oldPrice: regularPrice,
+      mrp: regularPrice,
+      type: type || "Strip of tablets",
+      delivery: delivery || "Delivery by Tomorrow 9 PM",
+      discount: discount || "",
+      prescription: Boolean(prescription),
+      image: imgData,
+      imageUrl: imgData.url || imageUrl || "",
+      quantity: Number(quantity) || 1,
+      stock: stock !== undefined && stock !== null ? Number(stock) : null,
+    });
 
-const medicine = await MedicineItem.create({
-  medicineCategory: medicineCategory,
-  medicineSubCategory: medicineSubCategory,
-  name: name,
-  description: description || "",
-  price: price,
-  image: {
-    url: "",
-    publicId: ""
-  }
-});
+    const data = await MedicineItem.findById(medicine._id)
+      .populate("medicineCategory")
+      .populate("medicineSubCategory");
 
-console.log("CREATED =>", medicine);
-
-const data = await MedicineItem.findById(
-  medicine._id
-)
-  .populate(
-    "medicineCategory"
-  )
-  .populate(
-    "medicineSubCategory"
-  );
-
-return res.status(201).json({
-  success: true,
-  message:
-    "Medicine created successfully",
-  data
-});
-
-
-} catch (error) {
+    return res.status(201).json({
+      success: true,
+      message: "Medicine created successfully",
+      data,
+    });
+  } catch (error) {
 
 
 console.error(

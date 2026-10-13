@@ -51,6 +51,7 @@ const labBookingSchema =
 
         enum: [
           "Home",
+          "Lab",
           "Lab Visit",
         ],
 
@@ -60,7 +61,8 @@ const labBookingSchema =
     
 
       scheduledDate: {
-        type: Date,
+        type: mongoose.Schema.Types.Mixed,
+        default: "",
       },
 
     
