@@ -126,12 +126,14 @@ app.use(
 // PHARMACY PRODUCT ROUTES
 // ======================================================
 
-// app.use(
-//   "/api/pharmacy-products",
-//   require(
-//     "./routes/pharmacyProductRoutes"
-//   )
-// );
+app.use(
+  "/api/pharmacy-products",
+  require("./routes/pharmacyProductRoutes")
+);
+app.use(
+  "/api/pharmacy-inventory",
+  require("./routes/pharmacyInventoryRoutes")
+);
 app.use(
   "/api/pickup-orders",
   require(

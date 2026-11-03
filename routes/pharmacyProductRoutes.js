@@ -1,9 +1,8 @@
 // routes/pharmacyProductRoutes.js
 
 const express = require("express");
-
 const router = express.Router();
-
+const multer = require("multer");
 const {
 
   createProduct,
@@ -19,7 +18,6 @@ const {
 } = require(
   "../controllers/pharmacyProductController"
 );
-
 const {
 
   protect,
@@ -30,22 +28,24 @@ const {
   "../middleware/authMiddleware"
 );
 
-
-// ======================================================
-// CREATE PRODUCT
-// ======================================================
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, callback) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return callback(new Error("Only image files are allowed"));
+    }
+    return callback(null, true);
+  },
+});
 
 router.post(
   "/create",
   protect,
   pharmacyOnly,
+  upload.single("image"),
   createProduct
 );
-
-
-// ======================================================
-// GET MY PRODUCTS
-// ======================================================
 
 router.get(
   "/all",
@@ -54,11 +54,6 @@ router.get(
   getAllProducts
 );
 
-
-// ======================================================
-// GET SINGLE PRODUCT
-// ======================================================
-
 router.get(
   "/:id",
   protect,
@@ -66,22 +61,13 @@ router.get(
   getSingleProduct
 );
 
-
-// ======================================================
-// UPDATE PRODUCT
-// ======================================================
-
 router.put(
   "/update/:id",
   protect,
   pharmacyOnly,
+  upload.single("image"),
   updateProduct
 );
-
-
-// ======================================================
-// DELETE PRODUCT
-// ======================================================
 
 router.delete(
   "/delete/:id",
@@ -89,10 +75,5 @@ router.delete(
   pharmacyOnly,
   deleteProduct
 );
-
-
-// ======================================================
-// EXPORT ROUTER
-// ======================================================
 
 module.exports = router;

@@ -10,6 +10,20 @@ const pickupItemSchema =
       required: true,
     },
 
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PharmacyProduct",
+      default: null,
+    },
+
+    inventoryAllocations: [
+      {
+        purchaseId: { type: mongoose.Schema.Types.ObjectId, ref: "PharmacyPurchase" },
+        purchaseItemId: { type: mongoose.Schema.Types.ObjectId },
+        quantity: { type: Number, min: 1 },
+      },
+    ],
+
     quantity: {
       type: Number,
       required: true,
@@ -101,6 +115,11 @@ const pickupOrderSchema =
       },
 
       items: [pickupItemSchema],
+
+      inventoryAdjusted: {
+        type: Boolean,
+        default: false,
+      },
 
       totalAmount: {
 

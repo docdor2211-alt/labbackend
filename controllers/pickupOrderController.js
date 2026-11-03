@@ -1,6 +1,10 @@
 const PickupOrder = require(
   "../models/pickupOrderModel"
 );
+const {
+  reserveInventory,
+  releaseInventory,
+} = require("../utils/pharmacyInventorySync");
 
 
 // ======================================================
@@ -10,7 +14,9 @@ const PickupOrder = require(
 const createPickupOrder =
   async (req, res) => {
 
+    let reservedItems = [];
     try {
+      reservedItems = await reserveInventory(req.user.id, req.body.items || []);
 
       const order =
         await PickupOrder.create({
@@ -34,7 +40,10 @@ const createPickupOrder =
             req.body.status,
 
           items:
-            req.body.items,
+            reservedItems,
+
+          inventoryAdjusted:
+            reservedItems.length > 0,
 
           totalAmount:
             req.body.totalAmount,
@@ -56,8 +65,11 @@ const createPickupOrder =
       });
 
     } catch (error) {
+      if (reservedItems.length > 0) {
+        await releaseInventory(req.user.id, reservedItems);
+      }
 
-      res.status(500).json({
+      res.status(error.statusCode || 500).json({
 
         success: false,
 
@@ -222,10 +234,25 @@ const updatePickupOrderStatus =
 
       }
 
-      order.status =
-        req.body.status;
-
-      await order.save();
+      const nextStatus = req.body.status;
+      if (nextStatus === "cancelled" && order.inventoryAdjusted) {
+        const itemsToRelease = order.items;
+        order.status = nextStatus;
+        order.inventoryAdjusted = false;
+        await order.save();
+        await releaseInventory(req.user.id, itemsToRelease);
+      } else {
+        if (
+          order.status === "cancelled" &&
+          nextStatus !== "cancelled" &&
+          !order.inventoryAdjusted
+        ) {
+          order.items = await reserveInventory(req.user.id, order.items);
+          order.inventoryAdjusted = order.items.length > 0;
+        }
+        order.status = nextStatus;
+        await order.save();
+      }
 
       res.status(200).json({
 
@@ -350,6 +377,10 @@ const deletePickupOrder =
 
         });
 
+      }
+
+      if (order.inventoryAdjusted) {
+        await releaseInventory(req.user.id, order.items);
       }
 
       res.status(200).json({

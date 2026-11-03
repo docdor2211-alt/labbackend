@@ -23,6 +23,20 @@ const orderItemSchema =
 
     },
 
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PharmacyProduct",
+      default: null,
+    },
+
+    inventoryAllocations: [
+      {
+        purchaseId: { type: mongoose.Schema.Types.ObjectId, ref: "PharmacyPurchase" },
+        purchaseItemId: { type: mongoose.Schema.Types.ObjectId },
+        quantity: { type: Number, min: 1 },
+      },
+    ],
+
     qty: {
 
       type: Number,
@@ -109,6 +123,11 @@ const pharmacyOrderSchema =
 
         default: [],
 
+      },
+
+      inventoryAdjusted: {
+        type: Boolean,
+        default: false,
       },
 
 
