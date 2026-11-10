@@ -11,6 +11,10 @@ const {
 
   getSingleProduct,
 
+  getPublicProducts,
+
+  getPublicSingleProduct,
+
   updateProduct,
 
   deleteProduct,
@@ -45,6 +49,16 @@ router.post(
   pharmacyOnly,
   upload.single("image"),
   createProduct
+);
+
+router.get(
+  "/public",
+  getPublicProducts
+);
+
+router.get(
+  "/public/:id",
+  getPublicSingleProduct
 );
 
 router.get(

@@ -29,6 +29,23 @@ const orderItemSchema =
       default: null,
     },
 
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      default: null,
+    },
+
+    productModel: {
+      type: String,
+      enum: ["PharmacyProduct", "MedicineItem"],
+      default: "PharmacyProduct",
+    },
+
+    pharmacy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PharmacyUser",
+      default: null,
+    },
+
     inventoryAllocations: [
       {
         purchaseId: { type: mongoose.Schema.Types.ObjectId, ref: "PharmacyPurchase" },
@@ -42,6 +59,14 @@ const orderItemSchema =
       type: Number,
 
       required: true,
+
+      min: 1,
+
+    },
+
+    quantity: {
+
+      type: Number,
 
       min: 1,
 
@@ -189,6 +214,36 @@ const pharmacyOrderSchema =
 
       },
 
+      totalAmount: {
+        type: Number,
+        min: 0,
+      },
+
+      deliveryAddress: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+
+      orderStatus: {
+        type: String,
+        default: "PLACED",
+      },
+
+      pharmacyStatus: {
+        type: String,
+        default: "Pending",
+      },
+
+      deliveryStatus: {
+        type: String,
+        default: "Pending",
+      },
+
+      cancelledAt: {
+        type: Date,
+      },
+
     },
 
     {
@@ -204,7 +259,9 @@ const pharmacyOrderSchema =
 // EXPORT MODEL
 // ======================================================
 
-module.exports = mongoose.model(
-  "MedicineOrder",
-  pharmacyOrderSchema
-);
+module.exports =
+  mongoose.models.MedicineOrder ||
+  mongoose.model(
+    "MedicineOrder",
+    pharmacyOrderSchema
+  );
